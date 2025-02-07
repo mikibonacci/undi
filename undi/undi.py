@@ -10,7 +10,7 @@ except ImportError:
     # this will become default but will also possibly
     # change the results (quadrupole values and gammas may change sligtly)
     from .isotopes import Element as element
-    print('Warning, using new isotopes!')
+    #print('Warning, using new isotopes!')
 from copy import deepcopy
 from fractions import Fraction
 

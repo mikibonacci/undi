@@ -13,6 +13,35 @@ from tqdm import tqdm
 
 angtom = 1e-10
 
+def check_enough_isotopes(structure, abundance_threshold=5., spin_threshold=0.49, without_muon=False):
+    """Checking that there is at least one isotope with spin
+    
+    We filter the abundance > abundance_threshold%
+    We filter the spin => spin_threshold
+
+    Args:
+        structure (ase.Atoms): the structure.
+        abundance_threshold (float): the threshold for the abundance in %.
+        spin_threshold (float): the threshold for the spin.
+        without_muon (bool): if True, we do not consider the last atom in the structure.
+    """
+    elements = np.unique(structure.get_chemical_symbols()) if without_muon else np.unique(structure.get_chemical_symbols()[:-1])
+
+    # Collect relevant isotopes (i.e. abundance > 5%)
+    info = {}
+    for element in elements:
+        isotopes = Element(element).isotopes
+        info[element] = [ i for i in isotopes if i.abundance > abundance_threshold]    
+    
+    candidate_isotopes = []
+    for element, abundant_isotopes in info.items():
+        for isotope in abundant_isotopes:
+            if isotope.spin >= 0.49:
+                candidate_isotopes.append(isotope)
+    
+    return info, isotopes, candidate_isotopes
+    
+    
 def gen_neighbouring_atomic_structure(atoms, isotopes, spins, hdim_max):
 
     ai,aj,d,D = neighbor_list('ijdD',atoms, 10.) # very large cutoff to get all possible interactions.
@@ -35,13 +64,14 @@ def gen_neighbouring_atomic_structure(atoms, isotopes, spins, hdim_max):
     
     for i in range(len(D)):
 
+        # we want ai[i] to be the muon/H
         if not (ai[i] == len(atoms)-1):
             continue
-
+        
+        # we want aj[i] to be the atom we are looking at (no muon/H)
         atom_symbol = atoms[aj[i]].symbol
-          
         if atom_symbol == 'H':
-            break
+            continue
 
         isotope_spin = spins[atom_symbol]
         # skip nuclei with no spin
@@ -81,7 +111,8 @@ def execute_undi_analysis(
         max_hdim: int = 10000,
         convergence_check: bool = False,
         algorithm: str = 'fast',
-        angular_integration_steps: int = 7
+        angular_integration_steps: int = 7,
+        abundance_threshold: float = 5., #% of abundance
     ):
     """
         Execute UNDI (mUon Nuclear Dipolar Interaction) analysis on a given atomic structure.
@@ -113,14 +144,14 @@ def execute_undi_analysis(
     # safety check
     if structure[-1].symbol.lower() != atom_as_muon.lower():
         raise RuntimeError("Muon should appear as last atom")
-
-    elements = np.unique(structure.get_chemical_symbols()[:-1])
-
-    # Collect relevant isotopes (i.e. abundance > 5%)
-    info = {}
-    for element in elements:
-        isotopes = Element(element).isotopes
-        info[element] = [ i for i in isotopes if i.abundance > 5.]
+    
+    # Collect relevant isotopes (i.e. abundance > abundance_threshold)
+    info, isotopes, isotope_list = check_enough_isotopes(structure,abundance_threshold)
+    if len(isotopes) == 0:
+        raise RuntimeError("""
+                           No isotopes with spin > 0.49 found in the structure. You can try to lower the abundance_threshold parameter. \n
+                           Please consider that maybe you don't need to run the calculation: the polarization will mostly be unaffected by the nuclear surrounding.
+                           """)
 
     # Time interval
     t = np.linspace(0, 20e-6, 600)
@@ -144,7 +175,6 @@ def execute_undi_analysis(
 
             cluster_spins[e] = i.spin
             cluster_isotopes[e] = i.mass_number
-
 
         undi_input, hdim = gen_neighbouring_atomic_structure(structure, cluster_isotopes, cluster_spins, max_hdim)
         if hdim == 2:
