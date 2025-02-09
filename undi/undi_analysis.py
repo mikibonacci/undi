@@ -154,7 +154,7 @@ def execute_undi_analysis(
                            """)
 
     # Time interval
-    t = np.linspace(0, 20e-6, 600)
+    t = np.linspace(0, 20e-6, 200)
 
     # Compute results for each cluster
     results = []
