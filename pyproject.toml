@@ -1,0 +1,42 @@
+[build-system]
+requires = ["flit_core >= 3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "undi"
+description="Muon-Nuclear Dipolar Interaction"
+version = "1.1"
+authors = [
+    {name = "Miki Bonacci", email = "bonfus@gmail.com"},
+]
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics"
+]
+keywords = ["muSR spin nuclear"]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy~=1.26",
+    "qutip",
+    "pybind11"
+]
+
+[tool.flit.sdist]
+include = ["undi/kubo_toyabe/*.txt"]
+
+[project.optional-dependencies]
+fast_cpp = ["pybind11"]
+progress_bar = ["tqdm"]
+
+[tool.flit.metadata]
+ext_modules = "ext_modules"
+headers = "glob('undi/fast/*.hpp') if ext_modules else None"
+cmdclass = {"build_ext": "build_ext"}
+
+[project.urls]
+Source = "http://github.com/bonfus/undi"
