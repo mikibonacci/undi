@@ -7,10 +7,10 @@ name = "undi"
 description="Muon-Nuclear Dipolar Interaction"
 version = "1.1"
 authors = [
-    {name = "Miki Bonacci", email = "bonfus@gmail.com"},
+    {name = "Pietro Bonfa", email = "bonfus@gmail.com"},
 ]
-readme = "README.md"
-license = {file = "LICENSE.txt"}
+readme = "README.rst"
+license = {file = "LICENSE"}
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3 :: Only",
@@ -32,11 +32,6 @@ include = ["undi/kubo_toyabe/*.txt"]
 [project.optional-dependencies]
 fast_cpp = ["pybind11"]
 progress_bar = ["tqdm"]
-
-[tool.flit.metadata]
-ext_modules = "ext_modules"
-headers = "glob('undi/fast/*.hpp') if ext_modules else None"
-cmdclass = {"build_ext": "build_ext"}
 
 [project.urls]
 Source = "http://github.com/bonfus/undi"
