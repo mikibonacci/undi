@@ -29,6 +29,7 @@ def check_enough_isotopes(structure, abundance_threshold=5., spin_threshold=0.49
 
     # Collect relevant isotopes (i.e. abundance > 5%)
     info = {}
+    isotopes = []
     for element in elements:
         isotopes = Element(element).isotopes
         info[element] = [ i for i in isotopes if i.abundance > abundance_threshold]    
@@ -39,7 +40,7 @@ def check_enough_isotopes(structure, abundance_threshold=5., spin_threshold=0.49
             if isotope.spin >= 0.49:
                 candidate_isotopes.append(isotope)
     
-    return info, isotopes, candidate_isotopes
+    return info, candidate_isotopes
     
     
 def gen_neighbouring_atomic_structure(atoms, isotopes, spins, hdim_max):
@@ -146,8 +147,8 @@ def execute_undi_analysis(
         raise RuntimeError("Muon should appear as last atom")
     
     # Collect relevant isotopes (i.e. abundance > abundance_threshold)
-    info, isotopes, isotope_list = check_enough_isotopes(structure,abundance_threshold)
-    if len(isotopes) == 0:
+    info, isotope_list = check_enough_isotopes(structure,abundance_threshold)
+    if len(isotope_list) == 0:
         raise RuntimeError("""
                            No isotopes with spin > 0.49 found in the structure. You can try to lower the abundance_threshold parameter. \n
                            Please consider that maybe you don't need to run the calculation: the polarization will mostly be unaffected by the nuclear surrounding.
