@@ -187,38 +187,6 @@ def execute_undi_analysis(
         B_lf = B_mod * np.array([0.,0.,1.])
         B_tf = B_mod * np.array([1.,0.,0.])
 
-        if convergence_check:
-            # just return the z signal to be analyzed.
-            print("Doing sample along Z, LF, convergence check")
-            signal_z_lf = np.zeros_like(t)
-            for iteration in range(1,6):
-                # we do an average
-                NS = MuonNuclearInteraction(undi_input,external_field=B_lf)
-                #NS.translate_rotate_sample_vec(direction) # translate_rotate_sample_by_vec
-                signal_z_lf += NS.celio_on_steroids(t,  k=4, algorithm=algorithm)
-                del NS
-            signal_z_lf /=6
-
-            results.append(
-                {
-                    "cluster_isotopes": cluster_isotopes,
-                    "spins": cluster_spins,
-                    "B_ext":B_mod,
-                    "t": t.tolist(),
-                    #"signal_x_lf": signal_x_lf.tolist(),
-                    #"signal_y_lf": signal_y_lf.tolist(),
-                    "signal_z_lf": signal_z_lf.tolist(),
-                    #"signal_x_tf": signal_x_tf.tolist(),
-                    #"signal_y_tf": signal_y_tf.tolist(),
-                    #"signal_z_tf": signal_z_tf.tolist(),
-                    "probability" : abd_prob,
-                    #"signal_powder_tf": powder_signal_tf.tolist(),
-                    #"signal_powder_lf": powder_signal_lf.tolist()
-                }
-            )
-
-            return results
-
         # Single crystal signals
 
         # Written explicitely, to make it more clear.
@@ -231,6 +199,22 @@ def execute_undi_analysis(
         NS.translate_rotate_sample_vec(direction) # translate_rotate_sample_by_vec
         signal_z_lf = NS.celio_on_steroids(t,  k=2, algorithm=algorithm)
         del NS
+        
+        if convergence_check:
+            # we just check one signal.
+            results.append(
+                {
+                    "cluster_isotopes": cluster_isotopes,
+                    "spins": cluster_spins,
+                    "B_ext":B_mod,
+                    "t": t.tolist(),
+                    "signal_z_lf": signal_z_lf.tolist(),
+                    "probability" : abd_prob,
+                }
+            )
+
+            return results
+            
 
         ## signal x
         direction = np.array([1.,0.,0.])
