@@ -213,7 +213,7 @@ def execute_undi_analysis(
                 }
             )
 
-            return results
+            continue
             
 
         ## signal x
